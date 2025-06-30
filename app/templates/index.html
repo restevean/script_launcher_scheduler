@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es" x-data="app()" x-init="init()">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestor de scripts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-yellow-100 font-mono text-sm p-4">
+  <h1 class="text-2xl mb-4 font-bold">🗂️ Gestor de Ejecución de Scripts</h1>
+
+  <form @submit.prevent="crearTarea" class="bg-white p-4 rounded shadow-md mb-6 space-y-2">
+    <div class="grid grid-cols-2 gap-2">
+      <input type="text" x-model="nueva.nombre" placeholder="Nombre de la tarea" class="border p-2 rounded">
+      <input type="text" x-model="nueva.script" placeholder="Ruta al script.py" class="border p-2 rounded">
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      <input type="number" x-model="nueva.dias" placeholder="Días" class="border p-2 rounded">
+      <input type="number" x-model="nueva.horas" placeholder="Horas" class="border p-2 rounded">
+      <input type="number" x-model="nueva.minutos" placeholder="Minutos" class="border p-2 rounded">
+    </div>
+    <div class="grid grid-cols-7 gap-1">
+      <template x-for="dia in diasSemana">
+        <label class="flex items-center space-x-1 text-xs">
+          <input type="checkbox" :value="dia" x-model="nueva.semana"> <span x-text="dia"></span>
+        </label>
+      </template>
+    </div>
+    <div>
+      <input type="datetime-local" x-model="nueva.inicio" class="border p-2 rounded w-full">
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Crear tarea</button>
+  </form>
+
+  <div class="flex space-x-4 h-[60vh]">
+    <!-- Panel izquierdo: tareas -->
+    <div class="w-1/3 bg-white p-2 rounded shadow overflow-y-auto">
+      <h2 class="font-bold mb-2">Tareas en ejecución</h2>
+      <template x-for="t in tareas" :key="t.id">
+        <div class="border p-2 mb-2 rounded">
+          <div class="font-semibold" x-text="t.name"></div>
+          <div class="text-xs text-gray-500" x-text="t.script_path"></div>
+          <div class="flex space-x-1 mt-2">
+            <button @click="ejecutarAhora(t.id)" class="bg-green-600 text-white px-2 py-1 rounded">▶️ Ejecutar</button>
+            <button @click="detener(t.id)" class="bg-red-600 text-white px-2 py-1 rounded">⏹️ Detener</button>
+            <button @click="reanudar(t.id)" class="bg-yellow-600 text-white px-2 py-1 rounded">🔁 Reanudar</button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Panel derecho: logs -->
+    <div class="w-2/3 flex flex-col">
+      <div class="flex items-center space-x-2 mb-2">
+        <label class="font-semibold">Ver log del día:</label>
+        <select x-model="logSeleccionado" @change="cargarLog" class="border rounded px-2 py-1">
+          <template x-for="archivo in archivosLog">
+            <option :value="archivo" x-text="archivo"></option>
+          </template>
+        </select>
+      </div>
+      <div class="bg-white flex-1 p-2 rounded shadow overflow-y-auto whitespace-pre-wrap" x-text="logActual">
+        Cargando log...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function app() {
+      return {
+        nueva: {
+          nombre: '', script: '', dias: 0, horas: 0, minutos: 0,
+          semana: [], inicio: ''
+        },
+        diasSemana: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        tareas: [],
+        archivosLog: [],
+        logSeleccionado: '',
+        logActual: '',
+
+        async init() {
+          await this.cargarTareas()
+          await this.cargarArchivosLog()
+          this.logSeleccionado = this.archivosLog.at(-1)
+          if (this.logSeleccionado) this.cargarLog()
+          setInterval(() => this.cargarLog(), 3000)
+        },
+
+        async cargarTareas() {
+          const res = await fetch('/api/tasks')
+          this.tareas = await res.json()
+        },
+
+        async crearTarea() {
+          const form = new FormData()
+          form.append('name', this.nueva.nombre)
+          form.append('script_path', this.nueva.script)
+          form.append('interval_days', this.nueva.dias)
+          form.append('interval_hours', this.nueva.horas)
+          form.append('interval_minutes', this.nueva.minutos)
+          form.append('weekdays', JSON.stringify(this.nueva.semana))
+          form.append('start_datetime', this.nueva.inicio)
+
+          await fetch('/api/tasks', { method: 'POST', body: form })
+          await this.cargarTareas()
+        },
+
+        async ejecutarAhora(id) {
+          await fetch(`/api/tasks/${id}/run`, { method: 'POST' })
+        },
+
+        async detener(id) {
+          await fetch(`/api/tasks/${id}/stop`, { method: 'POST' })
+        },
+
+        async reanudar(id) {
+          await fetch(`/api/tasks/${id}/resume`, { method: 'POST' })
+        },
+
+        async cargarArchivosLog() {
+          const res = await fetch('/api/logs')
+          this.archivosLog = await res.json()
+        },
+
+        async cargarLog() {
+          if (!this.logSeleccionado) return
+          const res = await fetch(`/api/logs/${this.logSeleccionado}`)
+          const data = await res.json()
+          this.logActual = data.log || ''
+        }
+      }
+    }
+  </script>
+</body>
+</html>

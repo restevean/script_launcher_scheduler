@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: trailing-whitespace
+      # otros hooks...
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: ruff-format-and-stage
+        name: Format and stage Python files with Ruff
+        entry: python scripts/format_and_stage.py
+        language: system
+        pass_filenames: true
+        stages: [ pre-commit ]
+
+      - id: run-tests
+        name: Run tests using pytest before push
+        entry: bash -c "PYTHONPATH=. poetry run pytest"
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
