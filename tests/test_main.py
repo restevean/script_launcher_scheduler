@@ -1,19 +1,19 @@
+import json
 import os
 import shutil
 import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import json
 from datetime import datetime, timedelta
 
 from fastapi.testclient import TestClient
-from main import DB_PATH, LOG_DIR, app, get_all_tasks, init_db, update_task_field
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from app.main import DB_PATH, LOG_DIR, app, get_all_tasks, init_db, update_task_field
 
 client = TestClient(app)
 
 
 def setup_module(module):
-    """Preparar entorno aislado para los tests"""
+    """Preparar el entorno aislado para los tests"""
     os.makedirs('data', exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
     init_db()
