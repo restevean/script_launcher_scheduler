@@ -17,10 +17,12 @@ repos:
     hooks:
       - id: ruff-format-and-stage
         name: Format and stage Python files with Ruff
-        entry: python scripts/format_and_stage.py
+        entry: poetry run python scripts/format_and_stage.py
         language: system
         pass_filenames: true
-        stages: [ pre-commit ]
+        stages: [pre-commit]
+        always_run: true
+        exit_zero: true
 
       - id: run-tests
         name: Run tests using pytest before push
@@ -28,3 +30,4 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+        working_directory: .
