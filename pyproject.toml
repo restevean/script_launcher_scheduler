@@ -27,7 +27,6 @@ ruff = "^0.12.1"
 
 [tool.ruff]
 line-length = 120
-select = ["E", "F", "W", "I"]  # Agrega más si quieres reglas más estrictas
 include = ["*.py"]
 exclude = ["*.md"]
 force-exclude = true

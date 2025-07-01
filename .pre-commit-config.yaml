@@ -21,8 +21,6 @@ repos:
         language: system
         pass_filenames: true
         stages: [pre-commit]
-        always_run: true
-        exit_zero: true
 
       - id: run-tests
         name: Run tests using pytest before push
@@ -30,4 +28,3 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
-        working_directory: .
