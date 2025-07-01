@@ -10,6 +10,9 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi (>=0.115.14,<0.116.0)",
     "uvicorn (>=0.35.0,<0.36.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "python-multipart (>=0.0.20,<0.0.21)",
 ]
 
 
@@ -22,3 +25,14 @@ pre-commit = "^4.2.0"
 pytest = "^8.4.1"
 ruff = "^0.12.1"
 
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "I"]  # Agrega más si quieres reglas más estrictas
+include = ["*.py"]
+exclude = ["*.md"]
+extend-exclude = ["**/*.db"]
+force-exclude = true
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "single"
