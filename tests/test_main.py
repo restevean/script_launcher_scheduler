@@ -13,14 +13,14 @@ client = TestClient(app)
 
 
 def setup_module(module):
-    """Preparar el entorno aislado para los tests"""
+    # Preparar el entorno aislado para los tests
     os.makedirs('data', exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
     init_db()
 
 
 def teardown_module(module):
-    """Limpiar tras los tests"""
+    # Limpiar tras los tests
     if os.path.exists(DB_PATH):
         os.remove(DB_PATH)
     if os.path.exists(LOG_DIR):
